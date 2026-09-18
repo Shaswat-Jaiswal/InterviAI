@@ -26,7 +26,8 @@ export const Sidebar = () => {
       icon: FiFileText,
     },
     {
-      name: "Interview Practice",
+      name: "Interview Assistant",
+      path: "/interview-practice",
       icon: FiMic,
     },
     {

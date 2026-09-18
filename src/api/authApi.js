@@ -42,5 +42,12 @@ export const reanalyzeResume = (resumeId) =>
 export const getMonthlyResumeCount = () =>
   API.get("/resumes/monthly-count");
 
+export const chatWithAI = (data) => {
+  return API.post("/interviews/chat", data);
+};
+
+export const answerInterview = (data) => {
+  return API.post("/interviews/answer", data);
+};
 export default API;
 

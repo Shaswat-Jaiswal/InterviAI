@@ -7,6 +7,7 @@ import authRoutes from "./routes/authroutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import resumeRoutes from "./routes/resumeroutes.js";
+import interviewRoutes from "./routes/interviewroutes.js";
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/resumes", resumeRoutes);
+app.use("/api/interviews", interviewRoutes);
 
 const server = http.createServer(app);
 

@@ -6,6 +6,7 @@ import { SidebarLayout } from "./Users/SidebarLayout/SidebarLayout.jsx";
 
 import { Dashboard } from "./Users/Dashbaord/Dashboard.jsx";
 import { ResumeAnalyzer } from "./Users/ResumeAnalyzer/ResumeAnalyzer.jsx";
+import { InterviewPractice } from "./Users/InterviewPractice/InterviewPractice.jsx";
 
 
 export const App = () => {
@@ -20,6 +21,7 @@ export const App = () => {
           
            <Route path="/dashboard" element={<Dashboard />} />
            <Route path="/resume" element={<ResumeAnalyzer/>}/>
+           <Route path="/interview-practice" element={<InterviewPractice />} />
           
           </Route>
       </Routes>

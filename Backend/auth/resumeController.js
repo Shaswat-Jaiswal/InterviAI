@@ -2,8 +2,11 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import { Resume } from "../Models/Resume.js";
-import { extractPdfText, calculateAtsScore } from "./atsAnalyzer.js";
-import { calculateAtsAnalysis } from "./atsAnalyzer.js";
+import {
+  extractPdfText,
+  calculateAtsScore,
+  calculateAtsAnalysis,
+} from "./atsAnalyzer.js";
 
 const uploadDirectory = path.join(process.cwd(), "uploads", "resumes");
 
@@ -41,6 +44,56 @@ export const uploadResume = multer({
   },
 }).single("resume");
 
+// const formatResumeItem = (item) => {
+//   if (typeof item === "string") {
+//     return item;
+//   }
+
+//   if (item && typeof item === "object") {
+//     return [
+//       item.title,
+//       item.role,
+//       item.company,
+//       item.name,
+//       item.description,
+//       item.details,
+//       item.text,
+//       item.techStack,
+//       item.technologies,
+//       item.stack,
+//       item.date,
+//       item.location,
+//       item.link,
+//     ]
+//       .filter(Boolean)
+//       .join(" - ");
+//   }
+
+//   return String(item ?? "");
+// };
+
+// const normalizeArray = (value) => {
+//   if (!value) return [];
+//   return Array.isArray(value) ? value : [value];
+// };
+
+// const flattenSkills = (skills) => {
+//   if (!skills) return [];
+
+//   if (Array.isArray(skills)) {
+//     return skills;
+//   }
+
+//   if (typeof skills === "object") {
+//     return Object.values(skills).flatMap((category) =>
+//       Array.isArray(category) ? category : normalizeArray(category)
+//     );
+//   }
+
+//   return [skills];
+// };
+
+
 export const saveResume = async (req, res) => {
   try {
     if (!req.file) {
@@ -52,23 +105,17 @@ export const saveResume = async (req, res) => {
 
     const fileBuffer = await fs.promises.readFile(req.file.path);
     const extractedText = await extractPdfText(fileBuffer);
-    const atsScore = calculateAtsScore(extractedText);
     const analysis = calculateAtsAnalysis(extractedText);
-
-    
-
+    const atsScore = calculateAtsScore(extractedText);
 
     const resume = await Resume.create({
       userId: req.user._id,
       fileName: req.file.originalname,
       filePath: `/uploads/resumes/${req.file.filename}`,
       atsScore,
-       atsBreakdown: analysis.breakdown,
+      atsBreakdown: analysis.breakdown,
       analysisStatus: "completed",
-    
     });
-
- 
 
     return res.status(201).json({
       success: true,

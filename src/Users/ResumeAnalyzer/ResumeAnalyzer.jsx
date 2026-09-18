@@ -2,7 +2,6 @@ import { FiMenu,
      FiBell,
      FiChevronDown,
      FiRefreshCw,
-     FiDownload,
      FiTrendingUp,
      FiEdit3,
      FiAlertTriangle,
@@ -18,6 +17,8 @@ export const ResumeAnalyzer = () => {
     const[showEmail, setShowEmail] = useState(false);
     const [currentResume, setCurrentResume] = useState(null);
     const [reanalyzing, setReanalyzing] = useState(false);
+
+const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
     useEffect(() => {
        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -38,15 +39,23 @@ export const ResumeAnalyzer = () => {
     }, []);
 
     const handleReanalyze = async () => {
-  if (!currentResume?._id) return;
-
   try {
     setReanalyzing(true);
 
-    const response = await reanalyzeResume(
-      currentResume._id
-    );
+    let resumeId = currentResume?._id;
 
+    if (!resumeId) {
+      const response = await getResumes();
+      const latestResume = response.data.resumes?.[0];
+      if (!latestResume?._id) {
+        setReanalyzing(false);
+        return;
+      }
+      resumeId = latestResume._id;
+      setCurrentResume(latestResume);
+    }
+
+    const response = await reanalyzeResume(resumeId);
     setCurrentResume(response.data.resume);
   } catch (error) {
     console.error("Re-analyze error:", error);
@@ -54,8 +63,6 @@ export const ResumeAnalyzer = () => {
     setReanalyzing(false);
   }
 };
-
-
 
     return(
         <div className="min-h-screen bg-bg-[#F8F8FC]">
@@ -100,21 +107,21 @@ export const ResumeAnalyzer = () => {
        <div className=" flex items-center justify-between px-8 mt-1">
   <div>
     <h1 className="text-[15px] font-bold flex items-center gap-2">
-      Corrected Resume
+      Original Resume
       <span className="text-[#6d35e8] text-2xl">✦</span>
     </h1>
 
     <p className="text-sm text-[#555579] mt-1">
-      We've improved your resume based on best practices and industry
-      standards.
+      Open and review the original uploaded resume PDF for ATS analysis.
     </p>
   </div>
 
   <div className="flex items-center gap-[4px] mt-1">
 
   <button
+  type="button"
   onClick={handleReanalyze}
-  disabled={!currentResume || reanalyzing}
+  disabled={reanalyzing}
   className="h-9 px-5 rounded-md border border-[#a978ff] text-[#6830df] bg-white text-sm font-medium flex items-center gap-2 disabled:opacity-50"
 >
   <FiRefreshCw
@@ -124,21 +131,11 @@ export const ResumeAnalyzer = () => {
   {reanalyzing ? "Analyzing..." : "Re-analyze"}
 </button>
 
-    <div className="flex">
-      <button className="h-9 px-5 rounded-l-md bg-gradient-to-r from-[#6630dd] to-[#7a3cf1] text-white text-sm font-semibold flex items-center gap-2">
-        <FiDownload />
-        Download Corrected Resume
-      </button>
-
-      <button className="h-9 w-10 rounded-r-md bg-[#7136e5] text-white border-l border-purple-300 flex items-center justify-center">
-        <FiChevronDown />
-      </button>
-    </div>
   </div>
 </div>
 
 
-<div className="grid grid-cols-4 gap-1 px-8 mt-[2px] mr-[350px]">
+<div className="grid grid-cols-4 gap-1 px-8 mt-[2px]">
 
   <div className="flex items-center bg-white rounded-2xl shadow-sm border border-gray-100 ">
 
@@ -148,7 +145,7 @@ export const ResumeAnalyzer = () => {
 
     <div className="ml-4">
       <p className=" font-bold">
-        ATS Score
+        ATS Score Original
       </p>
 
  <h2 className="text-xl font-bold mt-1">
@@ -196,12 +193,14 @@ export const ResumeAnalyzer = () => {
 
     <div className="ml-4">
       <p className=" font-bold">
-        Ciritical Improvement
+        ATS Score corrected
       </p>
 
-      <h2 className="text-xl font-bold mt-1">
-        92
-      </h2>
+<h2 className="text-xl font-bold mt-1">
+  {currentResume?.correctedAtsScore
+    ? `${currentResume.correctedAtsScore}%`
+    : "Generating..."}
+</h2>
 
         <h2 className="text-sm font-bold  text-gray-400">
               High Priority fixes
@@ -232,60 +231,21 @@ export const ResumeAnalyzer = () => {
     </div>
 </div>
 
-{/* <div className="flex items-center justify-between  px-8 mt-[15px]"> */}
 
-          {/* <div className="flex border border-gray-200 bg-white rounded-md overflow-hidden">
 
-            <button className="px-8 py-2 bg-gradient-to-r from-[#6330df] to-[#7438eb] text-white text-sm font-medium">
-              Side by Side
-            </button>
-
-            <button className="px-8 py-2 text-sm text-gray-600">
-              Unified View
-            </button>
-
-          </div>
-          </div> */}
-
-          <div className="px-8 mt-5 mr-[350px]">
-            
-  {/* {currentResume ? (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <p className="font-medium text-sm">{currentResume.fileName}</p>
-      </div>
-
-      <iframe
-        src={`http://localhost:5001${currentResume.filePath}`}
-        title="Current Resume"
-        className="w-full h-[800px]"
-      />
-    </div>
-  ) : (
-    <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">
-      Please upload your resume first.
-    </div>
-  )} */}
-
+          <div className="px-8 mt-5 ">
 {currentResume && (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-8 mt-2 bg-white">
     <div className="bg-white">
       <h2 className="font-bold mb-2">Original Resume</h2>
+  
       <iframe
-        src={`http://localhost:5001${currentResume.filePath}#toolbar=0`}
-        title="Original Resume"
-        className="w-full h-[390px] border-0 bg-white"
-      />
+    src={`${backendUrl}${currentResume.filePath}#toolbar=0`}
+    title="Original Resume"
+    className="w-full h-[390px]"
+  />
     </div>
 
-    <div className="bg-white">
-      <h2 className="font-bold mb-2">Corrected Resume</h2>
-      <iframe
-        src="/corrected-resume.pdf#toolbar=0"
-        title="Corrected Resume"
-        className="w-full h-[390px] border-0 bg-white"
-      />
-    </div>
   </div>
 )}
   
